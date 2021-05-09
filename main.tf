@@ -1,6 +1,21 @@
+data "aws_caller_identity" "current" {}
+
 data "aws_iam_policy_document" "kms" {
   statement {
-    sid = "Allow external access to CMK"
+    sid = "Allow CMK management"
+    effect = "Allow"
+    principals {
+      identifiers = [
+        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root",
+        data.aws_caller_identity.current.arn
+      ]
+      type = "AWS"
+    }
+    actions = ["kms:*"]
+    resources = ["*"]
+  }
+  statement {
+    sid = "Allow CMK external use"
     effect = "Allow"
     principals {
       identifiers = var.identifiers
@@ -14,6 +29,25 @@ data "aws_iam_policy_document" "kms" {
       "kms:DescribeKey"
     ]
     resources = ["*"]
+  }
+  statement {
+    sid = "Allow CMK external attachment"
+    effect = "Allow"
+    principals {
+      identifiers = var.identifiers
+      type = "AWS"
+    }
+    actions = [
+      "kms:CreateGrant",
+      "kms:ListGrants",
+      "kms:RevokeGrant"
+    ]
+    resources = ["*"]
+    condition {
+      variable = "kms:GrantIsForAWSResource"
+      test = "Bool"
+      values = [true]
+    }
   }
 }
 
