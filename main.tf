@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "kms" {
     resources = ["*"]
   }
   statement {
-    sid = "Allow CMK external use"
+    sid = "Allow CMK usage"
     effect = "Allow"
     principals {
       identifiers = var.identifiers
@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "kms" {
     resources = ["*"]
   }
   statement {
-    sid = "Allow CMK external attachment"
+    sid = "Allow CMK attachment"
     effect = "Allow"
     principals {
       identifiers = var.identifiers
