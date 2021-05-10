@@ -1,5 +1,9 @@
 data "aws_caller_identity" "current" {}
 
+locals {
+  name = "alias/${var.alias_name}"
+}
+
 data "aws_iam_policy_document" "kms" {
   statement {
     sid = "Allow CMK management"
@@ -31,6 +35,27 @@ data "aws_iam_policy_document" "kms" {
     resources = ["*"]
   }
   statement {
+    sid = "Allow CMK usage by alias"
+    effect = "Allow"
+    principals {
+      identifiers = var.identifiers
+      type = "AWS"
+    }
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey"
+    ]
+    resources = ["*"]
+    condition {
+      test = "StringLike"
+      values = [local.name]
+      variable = "kms:RequestAlias"
+    }
+  }
+  statement {
     sid = "Allow CMK attachment"
     effect = "Allow"
     principals {
@@ -44,9 +69,9 @@ data "aws_iam_policy_document" "kms" {
     ]
     resources = ["*"]
     condition {
-      variable = "kms:GrantIsForAWSResource"
       test = "Bool"
       values = [true]
+      variable = "kms:GrantIsForAWSResource"
     }
   }
 }
@@ -63,6 +88,6 @@ resource "aws_kms_key" "kms" {
 }
 
 resource "aws_kms_alias" "kms" {
-  name = "alias/${var.alias_name}"
+  name = local.name
   target_key_id = aws_kms_key.kms.id
 }
