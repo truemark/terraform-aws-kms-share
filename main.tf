@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "kms" {
   statement {
-    sid = "Allow CMK management"
+    sid    = "Allow CMK management"
     effect = "Allow"
     principals {
       identifiers = [
@@ -11,15 +11,15 @@ data "aws_iam_policy_document" "kms" {
       ]
       type = "AWS"
     }
-    actions = ["kms:*"]
+    actions   = ["kms:*"]
     resources = ["*"]
   }
   statement {
-    sid = "Allow CMK usage"
+    sid    = "Allow CMK usage"
     effect = "Allow"
     principals {
       identifiers = var.identifiers
-      type = "AWS"
+      type        = "AWS"
     }
     actions = [
       "kms:Encrypt",
@@ -31,11 +31,11 @@ data "aws_iam_policy_document" "kms" {
     resources = ["*"]
   }
   statement {
-    sid = "Allow CMK attachment"
+    sid    = "Allow CMK attachment"
     effect = "Allow"
     principals {
       identifiers = var.identifiers
-      type = "AWS"
+      type        = "AWS"
     }
     actions = [
       "kms:CreateGrant",
@@ -45,24 +45,24 @@ data "aws_iam_policy_document" "kms" {
     resources = ["*"]
     condition {
       variable = "kms:GrantIsForAWSResource"
-      test = "Bool"
-      values = [true]
+      test     = "Bool"
+      values   = [true]
     }
   }
 }
 
 resource "aws_kms_key" "kms" {
-  description = var.description
-  key_usage = var.key_usage
+  description              = var.description
+  key_usage                = var.key_usage
   customer_master_key_spec = var.customer_master_key_spec
-  is_enabled = var.is_enabled
-  enable_key_rotation = var.enable_key_rotation
-  deletion_window_in_days = var.deletion_window_in_days
-  tags = var.tags
-  policy = data.aws_iam_policy_document.kms.json
+  is_enabled               = var.is_enabled
+  enable_key_rotation      = var.enable_key_rotation
+  deletion_window_in_days  = var.deletion_window_in_days
+  tags                     = var.tags
+  policy                   = data.aws_iam_policy_document.kms.json
 }
 
 resource "aws_kms_alias" "kms" {
-  name = "alias/${var.alias_name}"
+  name          = "alias/${var.alias_name}"
   target_key_id = aws_kms_key.kms.id
 }
